@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBg">
+
+    <TextView
+        android:id="@+id/label"
+        android:text="Standard Preset"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/colorTitle"
+        android:textColor="@color/colorFont"
+        android:gravity="bottom|center_horizontal"
+        android:textSize="24sp"
+
+        />
+
+    <TextView
+        android:id="@+id/text1"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="bottom|center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorContent"
+        android:textColor="@color/colorFont"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:text="Führung"
+        android:textSize="16sp"/>
+
+    <SeekBar
+        android:id="@+id/slider1"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorContent"
+        android:textColor="@color/colorFont"
+        android:max="255"
+
+        />
+
+    <TextView
+        android:id="@+id/text2"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="bottom|center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorContent"
+        android:textColor="@color/colorFont"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:text="Aufhellung"
+        android:textSize="16sp"/>
+
+    <SeekBar
+        android:id="@+id/slider2"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorContent"
+        android:textColor="@color/colorFont"
+        android:max="255"
+
+        />
+
+    <TextView
+        android:id="@+id/text3"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="bottom|center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorContent"
+        android:textColor="@color/colorFont"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:text="Spitze"
+        android:textSize="16sp"
+        />
+    <SeekBar
+        android:id="@+id/slider3"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorContent"
+        android:textColor="@color/colorFont"
+        android:max="255"
+        />
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/colorBg">
+        <Button
+            android:id="@+id/button_init"
+            android:text="automatisch einstellen"
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@color/colorContent"
+            android:textColor="@color/colorFont"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginTop="8dp"
+            />
+
+        <Button
+            android:id="@+id/button_Setup"
+            android:text="Lampenaufbau"
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@color/colorContent"
+            android:textColor="@color/colorFont"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+             />
+    </LinearLayout>
+
+
+
+
+</LinearLayout>
