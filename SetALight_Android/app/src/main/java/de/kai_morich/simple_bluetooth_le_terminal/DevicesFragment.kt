@@ -70,13 +70,13 @@ class DevicesFragment : ListFragment() {
                 val device = listItems[position]
                 if (view == null)
                     view = activity!!.layoutInflater.inflate(R.layout.device_list_item, parent, false)
-                val text1 = view!!.findViewById<TextView>(R.id.text1)
-                val text2 = view.findViewById<TextView>(R.id.text2)
+                val Lamp1_text = view!!.findViewById<TextView>(R.id.Lamp1_text)
+                val Lamp2_text = view.findViewById<TextView>(R.id.Lamp2_text)
                 if (device.name == null || device.name.isEmpty())
-                    text1.text = "<unnamed>"
+                    Lamp1_text.text = "<unnamed>"
                 else
-                    text1.text = device.name
-                text2.text = device.address
+                    Lamp1_text.text = device.name
+                Lamp2_text.text = device.address
                 return view
             }
         }

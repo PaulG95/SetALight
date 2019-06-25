@@ -11,6 +11,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
@@ -46,17 +47,33 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
     private var initialStart = true
     private var connected = Connected.False
 
-    lateinit var seekbar1: SeekBar
-    lateinit var seekbar2: SeekBar
-    lateinit var seekbar3: SeekBar
+    private var realValue_lamp1 = 0
+    private var realValue_lamp2= 0
+    private var realValue_lamp3 = 0
 
-    lateinit var value_LeftLight: TextView
-    lateinit var value_RightLight: TextView
-    lateinit var value_BackLight: TextView
+    lateinit var seekbar_1_c: SeekBar
+    lateinit var seekbar_2_c: SeekBar
+    lateinit var seekbar_3_c: SeekBar
+    lateinit var seekbar1s: SeekBar
+    lateinit var seekbar2s: SeekBar
+    lateinit var seekbar3s: SeekBar
+    lateinit var seekbar_1_b: SeekBar
+    lateinit var seekbar_2_b: SeekBar
+    lateinit var seekbar_3_b: SeekBar
 
-    private var value_Ideal_LeftLight = 170
-    private var value_Ideal_RightLight = 120
-    private var value_Ideal_BackLight = 170
+    lateinit var shownValue_lamp1_col: TextView
+    lateinit var shownValue_lamp1_sat: TextView
+    lateinit var shownValue_lamp1_bright: TextView
+    lateinit var shownValue_lamp2_col: TextView
+    lateinit var shownValue_lamp2_sat: TextView
+    lateinit var shownValue_lamp2_bright: TextView
+    lateinit var shownValue_lamp3_col: TextView
+    lateinit var shownValue_lamp3_sat: TextView
+    lateinit var shownValue_lamp3_bright: TextView
+
+    private var idealValue_lamp1 = 230
+    private var idealValue_lamp2 = 50
+    private var idealValue_lamp3 = 10
 
 
     private enum class Connected {
@@ -137,63 +154,198 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_terminal, container, false)
 
-        //init sliders with listeners
-        seekbar1 = view.findViewById(R.id.slider1)
-        seekbar2 = view.findViewById(R.id.slider2)
-        seekbar3 = view.findViewById(R.id.slider3)
-
-        value_LeftLight = view.findViewById(R.id.text1)
-        value_RightLight = view.findViewById(R.id.text2)
-        value_BackLight = view.findViewById(R.id.text3)
-
-        seekbar1.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-            var result = ""
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-               result = format(progress)
-                value_LeftLight.text = "Führung" + newline + "Helligkeit: " + result
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                send("${result}${format(seekbar2.progress)}${format(seekbar3.progress)}")
-
-            }
-        })
-
-        seekbar2.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-            var result = ""
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                result = format(progress)
-                value_RightLight.text = "Aufhellung" + newline + "Helligkeit: " + result
-
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                send("${format(seekbar1.progress)}${result}${format(seekbar3.progress)}")
-
-            }
-        })
-
-        seekbar3.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-            var result = ""
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                result = format(progress)
-                value_BackLight.text = "Spitze" + newline + "Helligkeit: " + result
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                send("${format(seekbar1.progress)}${format(seekbar2.progress)}${result}")
-            }
-        })
+        // Both Buttons
 
         val sendKeyword = "setalight"
         val sendBtn = view.findViewById<View>(R.id.button_init)
-        sendBtn.setOnClickListener { v -> send(sendKeyword) }
+
+        val sendSetup_value = "000000010000000010000000010"
+        val sendSetup = view.findViewById<View>(R.id.button_Setup)
+
+        sendBtn.setOnClickListener { v ->
+            send(sendKeyword)
+            //sendBtn.setText("Waiting")
+        }
+        sendSetup.setOnClickListener{ v ->
+            seekbar_1_b.setProgress(10)
+            seekbar_2_b.setProgress(10)
+            seekbar_3_b.setProgress(10)
+            send(sendSetup_value)
+        }
+
+        //init sliders with listeners
+        seekbar_1_c = view.findViewById(R.id.Lamp1_col)
+        seekbar_2_c = view.findViewById(R.id.Lamp2_col)
+        seekbar_3_c = view.findViewById(R.id.Lamp3_col)
+        seekbar1s = view.findViewById(R.id.Lamp1_sat)
+        seekbar2s = view.findViewById(R.id.Lamp2_sat)
+        seekbar3s = view.findViewById(R.id.Lamp3_sat)
+        seekbar_1_b = view.findViewById(R.id.Lamp1_brightness)
+        seekbar_2_b = view.findViewById(R.id.Lamp2_brightness)
+        seekbar_3_b = view.findViewById(R.id.Lamp3_brightness)
+
+        shownValue_lamp1_col = view.findViewById(R.id.Lamp1_text_col)
+        shownValue_lamp1_sat = view.findViewById(R.id.Lamp1_saturation_text)
+        shownValue_lamp1_bright = view.findViewById(R.id.Lamp1_text_bright)
+        shownValue_lamp2_col = view.findViewById(R.id.Lamp2_text_col)
+        shownValue_lamp2_sat = view.findViewById(R.id.Lamp2_saturation_text)
+        shownValue_lamp2_bright = view.findViewById(R.id.Lamp2_text_bright)
+        shownValue_lamp3_col = view.findViewById(R.id.Lamp3_text_col)
+        shownValue_lamp3_sat = view.findViewById(R.id.Lamp3_saturation_text)
+        shownValue_lamp3_bright = view.findViewById(R.id.Lamp3_text_bright)
+
+
+        // Seekbars that change brightness of lamps
+
+        seekbar_1_c.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp1_col.text = "Farbe: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${result}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+
+            }
+        })
+
+        seekbar_2_c.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp2_col.text = "Farbe: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${result}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+
+            }
+        })
+
+        seekbar_3_c.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp3_col.text = "Farbe: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${result}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+            }
+        })
+
+
+        // Seekbars that change saturation of lamps
+
+        seekbar1s.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp1_sat.text = "Sättigung: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${result}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+
+            }
+        })
+
+        seekbar2s.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp2_sat.text = "Sättigung: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${result}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+
+            }
+        })
+
+        seekbar3s.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp3_sat.text = "Sättigung: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${result}${format(seekbar_3_b.progress)}")
+            }
+        })
+
+        // Seekbars that change color of lamps
+
+        seekbar_1_b.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp1_bright.text = "Helligkeit: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${result}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+
+            }
+        })
+
+        seekbar_2_b.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp2_bright.text = "Helligkeit: " + result_toPrint
+
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${result}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+
+            }
+        })
+
+        seekbar_3_b.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            var result = "000"
+            var result_toPrint = ""
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                result = format(progress)
+                result_toPrint = progress.toString()
+                shownValue_lamp3_bright.text = "Helligkeit: " + result_toPrint
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${seekbar_3_c.progress}${format(seekbar3s.progress)}${result}")
+            }
+        })
+
+
         return view!!
     }
 
@@ -222,6 +374,8 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
             return super.onOptionsItemSelected(item)
         }
     }
+
+    // format Seekbar values to String with 3 chars
 
     private fun format(input: Int):String{
         if(input < 10){
@@ -271,8 +425,80 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
         }
 
     }
-    private fun calculateBrightness(input: List<String>):String{
-        //todo culcate every new value
+
+    // calculate ideal brightness for lamps
+    private fun calculateBrightness(a: List<String>):String{
+       Log.d("receive", "Calculate Brightness Anfang")
+
+        // compares each real value to ideal value and sends new value to lamps
+        for (i in a.indices){
+            if(i == 0){
+                if (a[i].toInt()< (idealValue_lamp1-10) || a[i].toInt()>(idealValue_lamp1+10)){
+                    Log.d("receive", "Lampe 1 wird eingestellt")
+                    var factor = (idealValue_lamp1/realValue_lamp1).toInt()
+
+                    if (((seekbar_1_b.progress)*factor)>255){
+                        seekbar_1_b.setProgress(255)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                    else if(factor == 0){
+                        factor = 1
+                        seekbar_1_b.setProgress((seekbar_3_b.progress)*factor)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                    else{
+                        seekbar_1_b.setProgress((seekbar_1_b.progress)*factor)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+
+                }
+                else{}
+            }
+            else if (i == 1){
+                if (a[i].toInt()< (idealValue_lamp2-10) ||  a[i].toInt()>(idealValue_lamp2+10)){
+                    Log.d("receive", "Lampe 2 wird eingestellt")
+                    var factor = (idealValue_lamp2/realValue_lamp2).toInt()
+                    if (((seekbar_2_b.progress)*factor)>255){
+                        seekbar_2_b.setProgress(255)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                    else if(factor == 0){
+                        factor = 1
+                        seekbar_2_b.setProgress((seekbar_3_b.progress)*factor)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                    else{
+                        seekbar_2_b.setProgress((seekbar_2_b.progress)*factor)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                }
+                else{}
+
+            }
+            else if (i == 2){
+                Log.d("receive", "Lampe 3 wird eingestellt")
+                if (a[i].toInt()< (idealValue_lamp3-10) ||  a[i].toInt()>(idealValue_lamp3+10)){
+                    var factor = (idealValue_lamp3/realValue_lamp3).toInt()
+                    if (((seekbar_3_b.progress)*factor)>255){
+                        seekbar_3_b.setProgress(255)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                    else if(factor == 0){
+                        factor = 1
+                        seekbar_3_b.setProgress((seekbar_3_b.progress)*factor)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                    else{
+
+                        seekbar_3_b.setProgress((seekbar_3_b.progress)*factor)
+                        send("${format(seekbar_1_c.progress)}${format(seekbar1s.progress)}${format(seekbar_1_b.progress)}${format(seekbar_2_c.progress)}${format(seekbar2s.progress)}${format(seekbar_2_b.progress)}${format(seekbar_3_c.progress)}${format(seekbar3s.progress)}${format(seekbar_3_b.progress)}")
+                    }
+                }
+                else{}
+
+            }
+
+        }
 
         //todo set sliders to the new values
         return "${format(80)}${format(60)}${format(100)}"
@@ -280,13 +506,15 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
     private fun receive(data: ByteArray) {
         val s = String(data).chunked(3)
 
-        //set values from arduino to the sliders
-        seekbar1.setProgress(s[0].toInt())
-        seekbar2.setProgress(s[1].toInt())
-        seekbar3.setProgress(s[2].toInt())
+        //save values from arduino
+        realValue_lamp1 = (s[0].toInt())
+        realValue_lamp2= (s[1].toInt())
+        realValue_lamp3 = (s[2].toInt())
 
-        //TODO calculate new brightness values from received data
-        send(calculateBrightness(s))
+        Log.d("receive ", realValue_lamp1.toString()+ " " + realValue_lamp2.toString() + " " + realValue_lamp3.toString())
+
+        // calculate ideal value for lamps
+        calculateBrightness(s)
 
     }
 
